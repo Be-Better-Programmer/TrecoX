@@ -2,6 +2,7 @@ package com.bebetterprogrammer.trecox
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +16,17 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_otp_verification.*
 import java.util.concurrent.TimeUnit
+import kotlin.properties.Delegates
 
 class OtpVerificationActivity : AppCompatActivity() {
-
+    private lateinit var countDownTimer: CountDownTimer
     private lateinit var auth: FirebaseAuth
     private var storedVerificationId: String? = ""
     private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
     private lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
     private var verificationInProgress = false
     private var mobileNumber: String = ""
+    private var sec by Delegates.notNull<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,9 +61,13 @@ class OtpVerificationActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+            override fun onCodeSent(
+                verificationId: String,
+                token: PhoneAuthProvider.ForceResendingToken
+            ) {
                 Log.d(TAG, "onCodeSent:$verificationId")
-                Toast.makeText(applicationContext, "Message Sent Successfully!", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Message Sent Successfully!", Toast.LENGTH_LONG)
+                    .show()
 
                 storedVerificationId = verificationId
                 resendToken = token
@@ -73,7 +80,34 @@ class OtpVerificationActivity : AppCompatActivity() {
             60,                     // Timeout duration
             TimeUnit.SECONDS,       // Unit of timeout
             this,                   // Activity (for callback binding)
-            callbacks)              // OnVerificationStateChangedCallbacks
+            callbacks
+        )              // OnVerificationStateChangedCallbacks
+
+        countDownTimer = object : CountDownTimer(30000, 1000) {
+            override fun onFinish() {
+                num_txt.text = "Resend"
+            }
+
+            override fun onTick(millisUntilFinished: Long) {
+                sec = (millisUntilFinished / 1000).toInt()
+                num_txt.text = "OTP Sent to " + mobileNumber + "\n Remaining seconds : " + sec + " Edit Num"
+            }
+
+        }
+        countDownTimer.start()
+
+        num_txt.setOnClickListener {
+            if (num_txt.text == "OTP Sent to " + mobileNumber + "\n Remaining seconds : " + sec + " Edit Num") {
+                val changeIntent = Intent(this,LoginActivity::class.java)
+                startActivity(changeIntent)
+                finish()
+            } else if(num_txt.text == "Resend") {
+                val code = et_otp.text.toString()
+                verifyPhoneNumberWithCode(storedVerificationId, code)
+                num_txt.text = "OTP sent successfully!!!"
+            }
+        }
+
     }
 
     companion object {
