@@ -47,11 +47,7 @@ class OtpVerificationActivity : AppCompatActivity() {
 
             override fun onVerificationFailed(e: FirebaseException) {
                 Log.w(TAG, "onVerificationFailed", e)
-                Toast.makeText(
-                    applicationContext,
-                    "Something went wrong! \nPlease check your Mobile number",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(applicationContext, "Something went wrong! \nPlease check your Mobile number", Toast.LENGTH_LONG).show()
 
                 verificationInProgress = false
                 if (e is FirebaseAuthInvalidCredentialsException) {

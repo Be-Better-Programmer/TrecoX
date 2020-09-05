@@ -8,5 +8,6 @@
 
     <dimen name="margin_24">24dp</dimen>
     <dimen name="default_margin">16dp</dimen>
+    <dimen name="low_margin">8dp</dimen>
 
 </resources>

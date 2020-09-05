@@ -21,4 +21,7 @@
     <string name="title_order_list">Order List</string>
     <string name="title_info">Info</string>
 
+    <string name="empty_company_list">Empty Company List</string>
+    <string name="name">Name</string>
+
 </resources>

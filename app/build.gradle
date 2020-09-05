@@ -51,6 +51,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.2'
     implementation 'com.google.firebase:firebase-auth-ktx:19.3.2'
 
+    // Firebase Database
+    implementation 'com.google.firebase:firebase-database:19.4.0'
+    implementation 'com.google.firebase:firebase-database-ktx:19.4.0'
+
     //Navigation
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
@@ -58,5 +62,14 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
 
+    //Retrofit
+    compile('com.squareup.retrofit2:retrofit:2.5.0') {
+        // exclude Retrofit’s OkHttp dependency module and define your own module import
+        exclude module: 'okhttp'
+    }
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
 
 }

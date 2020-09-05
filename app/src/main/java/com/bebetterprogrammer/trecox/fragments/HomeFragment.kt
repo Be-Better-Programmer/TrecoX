@@ -1,82 +1,92 @@
 package com.bebetterprogrammer.trecox.fragments
 
-import android.os.AsyncTask
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bebetterprogrammer.trecox.adapter.CompanyDetailsAdapter
 import com.bebetterprogrammer.trecox.R
-import kotlinx.android.synthetic.main.fragment_home.view.*
-import org.apache.http.client.HttpClient
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.DefaultHttpClient
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.URI
+import com.bebetterprogrammer.trecox.models.Company
+import com.google.firebase.database.*
+import com.google.firebase.database.ktx.getValue
+import com.google.gson.Gson
+import kotlinx.android.synthetic.main.fragment_home.*
+import kotlin.collections.HashMap
 
 class HomeFragment : Fragment() {
 
-    val data = DataBase()
+    lateinit var currentView: View
+    lateinit var database: DatabaseReference
+    lateinit var adapter: CompanyDetailsAdapter
+    val companyList = mutableListOf<Company>()
+    var valueListner: ValueEventListener? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
-        view.company_tv.text = data.res
-
-        return view
+        database = FirebaseDatabase.getInstance().reference
+        currentView = inflater.inflate(R.layout.fragment_home, container, false)
+        return currentView
     }
 
-    class DataBase : AsyncTask<String, String, String>()
-    {
-
-           var res : String = "kk"
-
-        override fun doInBackground(vararg params: String?): String {
-            var result1 = ""
-            val host = "http://trecox.epizy.com/toandroid.php"
-
-            try {
-                val httpClient: HttpClient = DefaultHttpClient()
-                val request = HttpGet()
-                request.uri = URI(host)
-                val response = httpClient.execute(request)
-                val bufferedReader = BufferedReader(
-                    InputStreamReader(
-                        response.entity.content
-                    )
-                )
-                val stringBuffer = StringBuilder("")
-                var line: String? = ""
-                while (bufferedReader.readLine().also { line = it } != null) {
-                    stringBuffer.append(line)
-                }
-                bufferedReader.close()
-                result1 = stringBuffer.toString()
-            } catch (e: Exception) {
-                e.printStackTrace()
+    override fun onStart() {
+        super.onStart()
+        valueListner = object : ValueEventListener {
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
             }
-            return result1
+
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                companyList.clear()
+                val tableMap = dataSnapshot.getValue<kotlin.collections.HashMap<String, Any>>()
+                tableMap?.get("company")?.let {
+                    val rows = it as HashMap<String, Any>
+                    for (key in rows.keys) {
+                        val company =
+                            Gson().fromJson<Company>(rows[key].toString(), Company::class.java)
+                        company?.let { companyList.add(it) }
+                    }
+
+                    if (companyList.isEmpty()) {
+                        tv_empty_list.visibility = View.VISIBLE
+                        rv_company_list.visibility = View.GONE
+                    } else {
+                        tv_empty_list.visibility = View.GONE
+                        rv_company_list.visibility = View.VISIBLE
+                        adapter.data = companyList
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            }
         }
-
-        override fun onPostExecute(result: String) {
-            try {
-                val jsonObject = JSONObject(result)
-                val success = jsonObject.getInt("success")
-                if (success == 1) {
-                    val company = jsonObject.getJSONArray("company")
-                    val cmp = company.getJSONObject(0)
-                    val id = cmp.getInt("id")
-                    res = cmp.getString("company_name");
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }
+        valueListner?.let {
+            database.addValueEventListener(it)
         }
     }
+
+    override fun onStop() {
+        valueListner?.let {
+            database.removeEventListener(it)
+        }
+        super.onStop()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initAdapter()
+    }
+
+    private fun initAdapter() {
+        rv_company_list.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        adapter = CompanyDetailsAdapter()
+        rv_company_list.adapter = adapter
+    }
+
 }

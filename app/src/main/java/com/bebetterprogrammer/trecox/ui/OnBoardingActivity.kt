@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.bebetterprogrammer.trecox.R
-import com.bebetterprogrammer.trecox.SlideAdapter
+import com.bebetterprogrammer.trecox.adapter.SlideAdapter
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_on_boarding.*
 

@@ -1,12 +1,12 @@
-package com.bebetterprogrammer.trecox
+package com.bebetterprogrammer.trecox.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.viewpager.widget.PagerAdapter
+import com.bebetterprogrammer.trecox.R
 import kotlinx.android.synthetic.main.slide_layout.view.*
 
 class SlideAdapter(private val context: Context) : PagerAdapter() {
